@@ -10,12 +10,10 @@ import java.util.Optional;
 import com.revature.exceptions.NewUserHasNonZeroIdException;
 import com.revature.exceptions.RegistrationUnsuccessfulException;
 import com.revature.repositories.UserDAO;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.revature.exceptions.UsernameNotUniqueException;
-import com.revature.models.Role;
+import com.revature.exceptions.NotUniqueException;
 import com.revature.models.User;
 
 public class AuthServiceTest {
@@ -34,19 +32,19 @@ public class AuthServiceTest {
 		userService = mock(UserService.class);
 		userDAO = mock(UserDAO.class);
 	}
-	
+	/*
 	@Before
 	public void setUp() throws Exception {
 		EMPLOYEE_TO_REGISTER = new User(0, "genericEmployee1", "genericPassword", Role.EMPLOYEE);
 		GENERIC_EMPLOYEE_1 = new User(1, "genericEmployee1", "genericPassword", Role.EMPLOYEE);
 		GENERIC_FINANCE_MANAGER_1 = new User(1, "genericManager1", "genericPassword", Role.FINANCE_MANAGER);
 	}
-
+*/
 	@Test
 	public void testRegisterFailsWhenUsernameIsTaken() {
 		when(userService.getByUsername(anyString())).thenReturn(Optional.of(GENERIC_EMPLOYEE_1));
 		
-		assertThrows(UsernameNotUniqueException.class,
+		assertThrows(NotUniqueException.class,
 			() -> authService.register(EMPLOYEE_TO_REGISTER)
 		);
 

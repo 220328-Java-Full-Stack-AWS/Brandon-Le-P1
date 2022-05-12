@@ -1,6 +1,10 @@
 package com.revature.services;
 
+import com.revature.exceptions.UserPasswordDoesNotMatchException;
+import com.revature.exceptions.UsernameDoesNotExistException;
+import com.revature.exceptions.NotUniqueException;
 import com.revature.models.User;
+import com.revature.repositories.UserDAO;
 
 import java.util.Optional;
 
@@ -28,6 +32,39 @@ public class AuthService {
      * </ul>
      */
     public User login(String username, String password) {
+        UserDAO userModel = new UserDAO();
+        User user = new User();
+        try {
+            if(userModel.getByUsername(username).isPresent()) {
+                user = userModel.getByUsername(username).get();
+
+                if (user.getPassword().equals(password)) {
+                    System.out.println("logged in successfully");
+                    return user;
+                }
+                else {
+                    throw new UserPasswordDoesNotMatchException("Incorrect Password");
+                }
+
+            }
+            else {
+                throw new UsernameDoesNotExistException("Username does not exist");
+            }
+        } catch (UsernameDoesNotExistException | UserPasswordDoesNotMatchException e) {
+            System.out.println(e.getMessage());
+            if(e.getMessage().equals("Incorrect Password")) {
+                user.setPassword(null);
+                return user;
+            }
+            else if(e.getMessage().equals("Username does not exist")) {
+                user.setUsername(null);
+                return user;
+            }
+            else {
+                System.out.println("No idea what happened: login - AuthService.java");
+                System.out.println(user);
+            }
+        }
         return null;
     }
 
@@ -45,6 +82,37 @@ public class AuthService {
      * After registration, the id will be a positive integer.
      */
     public User register(User userToBeRegistered) {
+        UserDAO userModel = new UserDAO();
+        User user = new User();
+
+        try {
+            if(userModel.getByUsername(userToBeRegistered.getUsername()).isPresent()) {
+                throw new NotUniqueException("Username is taken");
+            }
+            else if (userModel.getByUserEmail(userToBeRegistered.getEmail()).isPresent()) {
+                throw new NotUniqueException("Email is taken");
+            }
+            else {
+                user = userModel.create(userToBeRegistered);
+                return user;
+            }
+        } catch (NotUniqueException e) {
+            System.out.println(e.getMessage());
+            if (e.getMessage().equals("Username is taken")) {
+                user = userModel.getByUsername(userToBeRegistered.getUsername()).get();
+                user.setUsername(null);
+                return user;
+            }
+            else if(e.getMessage().equals("Email is taken")) {
+                user = userModel.getByUserEmail(userToBeRegistered.getEmail()).get();
+                user.setEmail(null);
+                return user;
+            }
+            else {
+                System.out.println("No idea what happened: Auth Service");
+            }
+        }
+        System.out.println("Registration did not persist");
         return null;
     }
 
@@ -56,4 +124,7 @@ public class AuthService {
     public Optional<User> exampleRetrieveCurrentUser() {
         return Optional.empty();
     }
+
+
 }
+
